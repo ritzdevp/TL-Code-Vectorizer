@@ -13,11 +13,11 @@ data = 'pc2.csv'
 original_data, original_X, original_Y,combined_training_data,x_train1,x_train2,x_train,x_test,x_val,y_train1,y_train2,y_train,y_test,y_val = preprocess.my_sdp_preprocessor(data)
 all_data = [original_data, original_X, original_Y,combined_training_data,x_train1,x_train2,x_train,x_test,x_val,y_train1,y_train2,y_train,y_test,y_val]
 
-nn_clf = models.NN(*all_data)
-cnn_clf = models.cnn(*all_data)
+
+cnn_clf = models.cnn(*all_data) 
 svm_clf = models.svm(*all_data)
 rf_clf = models.random_forest(*all_data)
-
+nn_clf = models.NN(*all_data)
 
 
 from sklearn.metrics import *
@@ -37,6 +37,7 @@ def print_accuracy(model): #nn,cnn,svm,clf
         y_pred_on_val = model.predict(x_val)
         y_pred_on_test = model.predict(x_test)
         
+    print('******', str(model), '******')   
     print('||Validation Set||')
     print('Accuracy:',balanced_accuracy_score(y_val,y_pred_on_val))
     print('Avg Precision:', average_precision_score(y_val,y_pred_on_val))
@@ -64,3 +65,32 @@ svm_val_result, svm_test_result = print_accuracy(svm_clf)
 rf_val_result, rf_test_result = print_accuracy(rf_clf)
 nn_val_result, nn_test_result = print_accuracy(nn_clf)
 cnn_val_result, cnn_test_result = print_accuracy(cnn_clf)
+
+
+new_val_set_x = pd.concat([svm_val_result['val_predict'],rf_val_result['val_predict'],nn_val_result['val_predict'],cnn_val_result['val_predict']],axis=1)
+new_val_set_x_matrix = new_val_set_x.values
+new_val_set_y_matrix = svm_val_result['val_actual'].values
+
+new_test_set_x = pd.concat([svm_test_result['test_predict'],rf_test_result['test_predict'],nn_test_result['test_predict'],cnn_test_result['test_predict']],axis=1)
+new_test_set_x_matrix = new_test_set_x.values
+new_test_set_y_matrix = svm_test_result['test_actual'].values
+
+def send_classifiers_to_LR_file():
+    return nn_clf, cnn_clf, svm_clf, rf_clf
+
+from sklearn.linear_model import LogisticRegression
+def send_results_to_logistic_regression():
+    clf = LogisticRegression(random_state=0)
+    clf.fit(new_val_set_x_matrix, new_val_set_y_matrix)
+    #yyy = clf.predict(new_test_set_x_matrix)
+    #accuracy_score(y_test.values,yyy)
+    return clf, new_test_set_x_matrix
+
+
+
+
+
+
+
+
+
