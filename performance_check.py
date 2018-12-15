@@ -17,3 +17,50 @@ nn_clf = models.NN(*all_data)
 cnn_clf = models.cnn(*all_data)
 svm_clf = models.svm(*all_data)
 rf_clf = models.random_forest(*all_data)
+
+
+
+from sklearn.metrics import *
+
+def print_accuracy(model): #nn,cnn,svm,clf
+    if (model == nn_clf):
+        y_pred_on_val = model.predict(x_val)>0.5
+        y_pred_on_test = model.predict(x_test)>0.5
+    elif (model == cnn_clf):
+        x_val_matrix = x_val.values
+        x_val1 = x_val_matrix.reshape(x_val_matrix.shape[0], 1, len(x_val.columns), 1)
+        y_pred_on_val = model.predict(x_val1)>0.5
+        x_test_matrix = x_test.values
+        x_test1 = x_test_matrix.reshape(x_test_matrix.shape[0], 1, len(x_test.columns), 1)
+        y_pred_on_test = model.predict(x_test1)>0.5
+    else:
+        y_pred_on_val = model.predict(x_val)
+        y_pred_on_test = model.predict(x_test)
+        
+    print('||Validation Set||')
+    print('Accuracy:',balanced_accuracy_score(y_val,y_pred_on_val))
+    print('Avg Precision:', average_precision_score(y_val,y_pred_on_val))
+    print('f1_score:', f1_score(y_val,y_pred_on_val))
+    print('Precision:', precision_score(y_val,y_pred_on_val))
+    print('Recall:', recall_score(y_val, y_pred_on_val))
+    print('ROC_AUC:',roc_auc_score(y_val,y_pred_on_val))
+    print('||Test Set||')
+    print('Accuracy:',balanced_accuracy_score(y_test,y_pred_on_test))
+    print('Avg Precision:', average_precision_score(y_test,y_pred_on_test))
+    print('f1_score:', f1_score(y_test,y_pred_on_test))
+    print('Precision:', precision_score(y_test,y_pred_on_test))
+    print('Recall:', recall_score(y_test, y_pred_on_test))
+    print('ROC_AUC:',roc_auc_score(y_test,y_pred_on_test))
+    y_pred_on_val_df = pd.DataFrame(y_pred_on_val, columns=['defects1'])
+    y_pred_on_test_df = pd.DataFrame(y_pred_on_test, columns=['defects1'])
+    val_result = pd.concat([y_val['defects'].reset_index(drop=True), y_pred_on_val_df['defects1']],axis=1)
+    val_result = val_result.rename(columns={'defects':'val_actual', 'defects1':'val_predict'})
+    test_result = pd.concat([y_test['defects'].reset_index(drop=True),y_pred_on_test_df['defects1']],axis=1)
+    test_result = test_result.rename(columns={'defects':'test_actual','defects1':'test_predict'})
+    return val_result, test_result
+
+
+svm_val_result, svm_test_result = print_accuracy(svm_clf)
+rf_val_result, rf_test_result = print_accuracy(rf_clf)
+nn_val_result, nn_test_result = print_accuracy(nn_clf)
+cnn_val_result, cnn_test_result = print_accuracy(cnn_clf)
