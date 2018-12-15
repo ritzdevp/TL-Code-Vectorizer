@@ -71,11 +71,11 @@ def cnn(original_data, original_X, original_Y,combined_training_data,x_train1,x_
     y_val_matrix = y_val.values
     
     ytrainseries = y_train['defects']
-    y_train_onehot = pd.get_dummies(ytrainseries)
+    #y_train_onehot = pd.get_dummies(ytrainseries)
     yvalseries = y_val['defects']
-    y_val_onehot = pd.get_dummies(yvalseries)
+    #y_val_onehot = pd.get_dummies(yvalseries)
     
-    img_rows, img_cols = 1,37
+    img_rows, img_cols = 1,len(original_X.columns)
     
     x_train1 = x_train_matrix.reshape(x_train_matrix.shape[0], img_rows, img_cols, 1)
     x_val1 = x_val_matrix.reshape(x_val_matrix.shape[0], img_rows, img_cols, 1)
@@ -86,16 +86,17 @@ def cnn(original_data, original_X, original_Y,combined_training_data,x_train1,x_
     model.add(Conv2D(64, kernel_size=1, activation='relu',input_shape=input_shape))
     model.add(Conv2D(32, kernel_size=1, activation='relu'))
     model.add(Conv2D(16, kernel_size=1, activation='relu'))
-
-#    model.add(MaxPool2D(pool_size=(1,8)))
+    
+    
+#   model.add(MaxPool2D(pool_size=(1,8)))
     #model.add(Dropout(0.2))
     model.add(Flatten())
-    #model.add(Dense(4, activation='relu'))
+    model.add(Dense(8, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
     #compile model using accuracy to measure model performance
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     #train the model
-    model.fit(x_train1, y_train_matrix, epochs=70)    
+    model.fit(x_train1, y_train_matrix, epochs=40)    
     y_pred = model.predict(x_val1)>0.5
     y_pred_df = pd.DataFrame(y_pred)
     
